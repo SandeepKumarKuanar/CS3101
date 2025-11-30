@@ -124,9 +124,9 @@ int main() {
 	char judges[J][20] = {"Sanu", "Udit", "Alka", "Kavita"};
 	for(int a = 0; a < J; a++){
 		char fav[20];
-		printf("Judge number %d, who is your favourite?", a+1);
+		printf("Judge number %d, who is your favourite?\n", a+1);
 		scanf("%s", fav);
-		printf("Giving him extra 5 marks");
+		printf("Giving him extra 5 marks\n");
 		for (i = 0; i < N; i++) {
 		    if (strcmp(contestants[i], fav) == 0)
 		        totalScore[i] += 5;
@@ -171,52 +171,93 @@ int main() {
     char wildcard[20];
     scanf("%s", wildcard);
 
-    // Identify finalists 
-    int finalists[2], f = 0;
-    for (i = 0; i < N; i++) {
-        if (active[i] >= 1)
-            finalists[f++] = i;
-    }
-
-    // Find wildcard index
-    int wildIndex = -1;
+    // Find wildcard index and make it alive
     for (i = 0; i < N; i++) {
         if (strcmp(contestants[i], wildcard) == 0)
-            wildIndex = i;
+            active[i] += 1;
+    }
+    //Sort them up on the basis of active or not
+	for (i = 0; i < N; i++) {
+	    for (j = i + 1; j < N; j++) {
+	        if (active[j] > active[i]) {
+	        	// switching up things
+	        	// 1. active status, if i == 0, then plus 1
+	        	int temp2 = active[i];
+	            active[i] = active[j];
+	            active[j] = temp2;
+	            
+				// 2. total scores
+				int temp1 = totalScore[i];
+	            totalScore[i] = totalScore[j];
+	            totalScore[j] = temp1;
+	            
+	            // 3. contestants, strings
+	            char temp3[20];
+	            strcpy(temp3, contestants[i]);
+	            strcpy(contestants[i], contestants[j]);
+	            strcpy(contestants[j], temp3);
+	            
+	            // 4. round scores
+	            int temp4 = roundScore[i];
+	            roundScore[i] = roundScore[j];
+	            roundScore[j] = temp4;
+	        }
+	    }
+	}
+	printf("\nAfter introducing the wild card, now the leader board is\n");
+    for(int i = 0; i < N; i++){
+    	printf("Contestants[%d] = %s ; active = %d ; roundScores = %d ; totalScores = %d\n", i, contestants[i], active[i], roundScore[i], totalScore[i]);
     }
 
+	// ---------- FINALE EVENT ----------
     printf("\n--- FINALE ---\n");
-
-    int final3[3] = {finalists[0], finalists[1], wildIndex};
-    int finalScores[3] = {0};
-
-    for (i = 0; i < 3; i++) {
-        int s, u, a, k;
-        printf("\nEnter scores for %s (Sanu Udit Alka Kavita): ", contestants[i]);
-        scanf("%d %d %d %d", &s, &u, &a, &k);
-        finalScores[i] = s + u + a + k;
+    // locking in final scores
+    for (i = 0; i < N; i++) {
+    	if(active[i] >= 1){
+    		int s, u, a, k;
+			printf("\nEnter scores for %s (Sanu Udit Alka Kavita): ", contestants[i]);
+		    scanf("%d %d %d %d", &s, &u, &a, &k);
+		    roundScore[i] = s + u + a + k;
+		    totalScore[i] += roundScore[i];
+    	}
+    	
     }
-
-    // Determine winner, 1st runner-up, 2nd runner-up
-    // Sort finalScores descending (simple bubble sort)
-    for (i = 0; i < 3; i++) {
-        for (j = i + 1; j < 3; j++) {
-            if (finalScores[j] > finalScores[i]) {
-                int temp = finalScores[i];
-                finalScores[i] = finalScores[j];
-                finalScores[j] = temp;
-
-                int temp2 = final3[i];
-                final3[i] = final3[j];
-                final3[j] = temp2;
-            }
-        }
+    //Sort them up
+	for (i = 0; i < N; i++) {
+	    for (j = i + 1; j < N; j++) {
+	        if (totalScore[j] > totalScore[i] && active[i] >= 1 && active[j] >= 1) {
+	        	// switching up things
+	        	// 1. total scores
+	            int temp1 = totalScore[i];
+	            totalScore[i] = totalScore[j];
+	            totalScore[j] = temp1;
+				
+				// 2. active status, if i == 0, then plus 1
+				int temp2 = active[i];
+	            active[i] = active[j];
+	            active[j] = temp2;
+	            
+	            // 3. contestants, strings
+	            char temp3[20];
+	            strcpy(temp3, contestants[i]);
+	            strcpy(contestants[i], contestants[j]);
+	            strcpy(contestants[j], temp3);
+	            
+	            // 4. round scores
+	            int temp4 = roundScore[i];
+	            roundScore[i] = roundScore[j];
+	            roundScore[j] = temp4;
+	        }
+	    }
+	}
+    for(int i = 0; i < N; i++){
+    	printf("Contestants[%d] = %s ; active = %d ; roundScores = %d ; totalScores = %d\n", i, contestants[i], active[i], roundScore[i], totalScore[i]);
     }
-
-    printf("\n--- FINAL RESULTS ---\n");
-    printf("WINNER: %s\n", contestants[final3[0]]);
-    printf("FIRST RUNNER-UP: %s\n", contestants[final3[1]]);
-    printf("SECOND RUNNER-UP: %s\n", contestants[final3[2]]);
-
+    
+    // ---------- FINAL RESULTS ---------- 
+    printf("The WINNER OF EVENT IS -> Contestants[%d] = %s ; with Total Scores = %d\n", 0, contestants[0], totalScore[0]);
+    printf("The RUNNERS-UP OF EVENT IS -> Contestants[%d] = %s ; with Total Scores = %d\n", 1, contestants[1], totalScore[1]);
+    printf("The 2ND RUNNERS-UP OF EVENT IS -> Contestants[%d] = %s ; with Total Scores = %d\n", 2, contestants[2], totalScore[2]);
+    
     return 0;
 }
